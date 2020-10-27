@@ -17,24 +17,21 @@
     along with dnSpy.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace dnSpy.Contracts.Disassembly {
-	/// <summary>
-	/// GNU assembler (AT&amp;T syntax) disassembly settings
-	/// </summary>
-	public interface IGasDisassemblySettings : IX86DisassemblySettings {
-		/// <summary>
-		/// If true, the formatter doesn't add '%' to registers, eg. %eax vs eax
-		/// </summary>
-		bool NakedRegisters { get; set; }
+using System.ComponentModel.Composition;
+using dnSpy.Contracts.Text;
+using Microsoft.VisualStudio.Utilities;
 
-		/// <summary>
-		/// Shows the mnemonic size suffix, eg. 'mov %eax,%ecx' vs 'movl %eax,%ecx'
-		/// </summary>
-		bool ShowMnemonicSizeSuffix { get; set; }
+namespace dnSpy.Documents.Tabs.DocViewer {
+	static class DecompilerTabContentContentTypes {
+		public const string DecompilerTabContentToolTip = nameof(DecompilerTabContentToolTip);
+	}
 
-		/// <summary>
-		/// Add a space after the comma if it's a memory operand, eg. '(%eax,%ecx,2)' vs '(%eax, %ecx, 2)'
-		/// </summary>
-		bool SpaceAfterMemoryOperandComma { get; set; }
+	static class ContentTypeDefinitions {
+#pragma warning disable CS0169
+		[Export]
+		[Name(DecompilerTabContentContentTypes.DecompilerTabContentToolTip)]
+		[BaseDefinition(ContentTypes.Text)]
+		static readonly ContentTypeDefinition? DecompilerTabContentToolTip;
+#pragma warning restore CS0169
 	}
 }

@@ -17,24 +17,22 @@
     along with dnSpy.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-namespace dnSpy.Contracts.Disassembly {
-	/// <summary>
-	/// masm disassembly settings
-	/// </summary>
-	public interface IMasmDisassemblySettings : IX86DisassemblySettings {
-		/// <summary>
-		/// Add a DS segment override even if it's not present. Used if it's 16/32-bit code and mem op is a displ, eg. 'mov eax,[12345678]' vs 'mov eax,ds:[12345678]'
-		/// </summary>
-		bool AddDsPrefix32 { get; set; }
+using System;
+using System.Diagnostics;
+using dnlib.DotNet.Resources;
+using dnSpy.Contracts.Documents.TreeView;
+using dnSpy.Contracts.Documents.TreeView.Resources;
 
-		/// <summary>
-		/// Show symbols in brackets, eg. '[ecx+symbol]' vs 'symbol[ecx]' and '[symbol]' vs 'symbol'
-		/// </summary>
-		bool SymbolDisplInBrackets { get; set; }
+namespace dnSpy.AsmEditor.Resources {
+	readonly struct NodeAndResourceElement {
+		public DocumentTreeNodeData Node => node;
+		public ResourceElement ResourceElement => ResourceElementNode.GetResourceElement(node) ?? throw new InvalidOperationException();
 
-		/// <summary>
-		/// Show displacements in brackets, eg. '[ecx+1234h]' vs '1234h[ecx]'
-		/// </summary>
-		bool DisplInBrackets { get; set; }
+		readonly DocumentTreeNodeData node;
+
+		public NodeAndResourceElement(DocumentTreeNodeData node) {
+			Debug2.Assert(!(ResourceElementNode.GetResourceElement(node) is null));
+			this.node = node;
+		}
 	}
 }

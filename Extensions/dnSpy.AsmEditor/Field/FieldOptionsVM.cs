@@ -28,13 +28,13 @@ using dnSpy.Contracts.MVVM;
 
 namespace dnSpy.AsmEditor.Field {
 	enum FieldAccess {
-		PrivateScope	= (int)FieldAttributes.PrivateScope >> 0,
-		Private			= (int)FieldAttributes.Private >> 0,
-		FamANDAssem		= (int)FieldAttributes.FamANDAssem >> 0,
-		Assembly		= (int)FieldAttributes.Assembly >> 0,
-		Family			= (int)FieldAttributes.Family >> 0,
-		FamORAssem		= (int)FieldAttributes.FamORAssem >> 0,
-		Public			= (int)FieldAttributes.Public >> 0,
+		PrivateScope	= (int)FieldAttributes.PrivateScope,
+		Private			= (int)FieldAttributes.Private,
+		FamANDAssem		= (int)FieldAttributes.FamANDAssem,
+		Assembly		= (int)FieldAttributes.Assembly,
+		Family			= (int)FieldAttributes.Family,
+		FamORAssem		= (int)FieldAttributes.FamORAssem,
+		Public			= (int)FieldAttributes.Public,
 	}
 
 	sealed class FieldOptionsVM : ViewModelBase {
@@ -42,22 +42,11 @@ namespace dnSpy.AsmEditor.Field {
 
 		public ICommand ReinitializeCommand => new RelayCommand(a => Reinitialize());
 
-		static readonly EnumVM[] fieldAccessList = new EnumVM[] {
-			new EnumVM(Field.FieldAccess.PrivateScope, dnSpy_AsmEditor_Resources.FieldAccess_PrivateScope),
-			new EnumVM(Field.FieldAccess.Private, dnSpy_AsmEditor_Resources.FieldAccess_Private),
-			new EnumVM(Field.FieldAccess.FamANDAssem, dnSpy_AsmEditor_Resources.FieldAccess_FamilyAndAssembly),
-			new EnumVM(Field.FieldAccess.Assembly, dnSpy_AsmEditor_Resources.FieldAccess_Assembly),
-			new EnumVM(Field.FieldAccess.Family, dnSpy_AsmEditor_Resources.FieldAccess_Family),
-			new EnumVM(Field.FieldAccess.FamORAssem, dnSpy_AsmEditor_Resources.FieldAccess_FamilyOrAssembly),
-			new EnumVM(Field.FieldAccess.Public, dnSpy_AsmEditor_Resources.FieldAccess_Public),
-		};
+		static readonly EnumVM[] fieldAccessList = EnumVM.Create(typeof(FieldAccess));
 		public EnumListVM FieldAccess { get; } = new EnumListVM(fieldAccessList);
 
 		public FieldAttributes Attributes {
-			get {
-				return (attributes & ~FieldAttributes.FieldAccessMask) |
-					(FieldAttributes)((int)(Field.FieldAccess)FieldAccess.SelectedItem << 0);
-			}
+			get => (attributes & ~FieldAttributes.FieldAccessMask) | (FieldAttributes)(FieldAccess)FieldAccess.SelectedItem!;
 			set {
 				if (attributes != value) {
 					attributes = value;
@@ -141,7 +130,7 @@ namespace dnSpy.AsmEditor.Field {
 				Attributes &= ~flag;
 		}
 
-		public string Name {
+		public string? Name {
 			get => name;
 			set {
 				if (name != value) {
@@ -150,9 +139,9 @@ namespace dnSpy.AsmEditor.Field {
 				}
 			}
 		}
-		UTF8String name;
+		UTF8String? name;
 
-		public TypeSig FieldTypeSig {
+		public TypeSig? FieldTypeSig {
 			get => TypeSigCreator.TypeSig;
 			set => TypeSigCreator.TypeSig = value;
 		}
@@ -160,14 +149,14 @@ namespace dnSpy.AsmEditor.Field {
 		public string FieldTypeHeader => string.Format(dnSpy_AsmEditor_Resources.FieldType, TypeSigCreator.TypeSigDnlibFullName);
 
 		public TypeSigCreatorVM TypeSigCreator { get; }
-		public Constant Constant => HasDefault ? ownerModule.UpdateRowId(new ConstantUser(ConstantVM.Value)) : null;
+		public Constant? Constant => HasDefault ? ownerModule.UpdateRowId(new ConstantUser(ConstantVM.Value)) : null;
 		public ConstantVM ConstantVM { get; }
 		public MarshalTypeVM MarshalTypeVM { get; }
 		public NullableUInt32VM FieldOffset { get; }
 		public HexStringVM InitialValue { get; }
 		public UInt32VM RVA { get; }
 
-		public ImplMap ImplMap {
+		public ImplMap? ImplMap {
 			get => ImplMapVM.ImplMap;
 			set => ImplMapVM.ImplMap = value;
 		}
@@ -187,7 +176,7 @@ namespace dnSpy.AsmEditor.Field {
 				CanAddGenericMethodVar = false,
 				OwnerType = ownerType,
 			};
-			if (ownerType != null && ownerType.GenericParameters.Count == 0)
+			if (!(ownerType is null) && ownerType.GenericParameters.Count == 0)
 				typeSigCreatorOptions.CanAddGenericTypeVar = false;
 			TypeSigCreator = new TypeSigCreatorVM(typeSigCreatorOptions);
 			TypeSigCreator.PropertyChanged += typeSigCreator_PropertyChanged;
@@ -212,13 +201,13 @@ namespace dnSpy.AsmEditor.Field {
 			Reinitialize();
 		}
 
-		void constantVM_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+		void constantVM_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
 			if (e.PropertyName == nameof(ConstantVM.IsEnabled))
 				HasDefault = ConstantVM.IsEnabled;
 			HasErrorUpdated();
 		}
 
-		void marshalTypeVM_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+		void marshalTypeVM_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
 			if (e.PropertyName == nameof(MarshalTypeVM.IsEnabled))
 				HasFieldMarshal = MarshalTypeVM.IsEnabled;
 			else if (e.PropertyName == nameof(MarshalTypeVM.TypeString))
@@ -226,13 +215,13 @@ namespace dnSpy.AsmEditor.Field {
 			HasErrorUpdated();
 		}
 
-		void implMapVM_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+		void implMapVM_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
 			if (e.PropertyName == nameof(ImplMapVM.IsEnabled))
 				PinvokeImpl = ImplMapVM.IsEnabled;
 			HasErrorUpdated();
 		}
 
-		void typeSigCreator_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+		void typeSigCreator_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
 			if (e.PropertyName == nameof(TypeSigCreator.TypeSigDnlibFullName))
 				OnPropertyChanged(nameof(FieldTypeHeader));
 			HasErrorUpdated();
@@ -249,9 +238,9 @@ namespace dnSpy.AsmEditor.Field {
 			FieldOffset.Value = options.FieldOffset;
 			MarshalTypeVM.Type = options.MarshalType;
 			RVA.Value = (uint)options.RVA;
-			InitialValue.Value = options.InitialValue;
+			InitialValue.Value = options.InitialValue!;
 			ImplMap = options.ImplMap;
-			if (options.Constant != null) {
+			if (!(options.Constant is null)) {
 				HasDefault = true;
 				ConstantVM.Value = options.Constant.Value;
 			}
@@ -267,7 +256,7 @@ namespace dnSpy.AsmEditor.Field {
 			options.Attributes = Attributes;
 			options.Name = Name;
 			var typeSig = FieldTypeSig;
-			options.FieldSig = typeSig == null ? null : new FieldSig(typeSig);
+			options.FieldSig = typeSig is null ? null : new FieldSig(typeSig);
 			options.FieldOffset = FieldOffset.Value;
 			options.MarshalType = HasFieldMarshal ? MarshalTypeVM.Type : null;
 			options.RVA = (dnlib.PE.RVA)RVA.Value;
